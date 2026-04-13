@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import Hero from '../components/sections/Hero'
 import About from '../components/sections/About'
 import TechStack from '../components/sections/TechStack'
+import Projects from '../components/sections/Projects'
 
 const Section = ({ id, title, children }: { id: string; title: string; children?: ReactNode }) => (
   <section id={id} className="max-w-4xl mx-auto px-6 py-20">
@@ -18,7 +19,7 @@ export default function Home() {
       <Hero />
       <About />
       <TechStack />
-      <Section id="projects" title="ls projects/" />
+      <Projects />
       <Section id="experience" title="cat experience.log" />
       <Section id="blog" title="ls blog/" />
       <Section id="contact" title="mail -s hello" />
