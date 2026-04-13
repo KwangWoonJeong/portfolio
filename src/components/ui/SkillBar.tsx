@@ -29,14 +29,20 @@ export default function SkillBar({ name, level, icon, description, animate }: Pr
     >
       <div className="flex items-center justify-between mb-1 font-mono text-sm">
         <span className="text-text-primary">
-          {icon && <span className="mr-1.5">{icon}</span>}
+          {icon && <span className="mr-1.5" aria-hidden="true">{icon}</span>}
           {name}
         </span>
         <span className="text-text-muted">{level}%</span>
       </div>
 
-      {/* visual bar */}
-      <div className="relative h-5 bg-surface border border-border rounded overflow-hidden font-mono text-xs flex items-center">
+      <div
+        className="relative h-5 bg-surface border border-border rounded overflow-hidden font-mono text-xs flex items-center"
+        role="progressbar"
+        aria-valuenow={animate ? level : 0}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`${name} ${level}%`}
+      >
         <motion.div
           className="h-full rounded-l"
           initial={{ width: 0 }}
@@ -44,13 +50,11 @@ export default function SkillBar({ name, level, icon, description, animate }: Pr
           transition={{ duration: 0.8, ease: 'easeOut' }}
           style={{ backgroundColor: barColor(level), opacity: 0.25 }}
         />
-        {/* text overlay */}
-        <span className="absolute inset-0 flex items-center px-2 text-text-muted select-none">
+        <span className="absolute inset-0 flex items-center px-2 text-text-muted select-none" aria-hidden="true">
           [{'█'.repeat(animate ? filled : 0)}{'░'.repeat(animate ? empty : 10)}]
         </span>
       </div>
 
-      {/* tooltip */}
       <AnimatePresence>
         {hovered && (
           <motion.div
@@ -58,6 +62,7 @@ export default function SkillBar({ name, level, icon, description, animate }: Pr
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
             transition={{ duration: 0.15 }}
+            role="tooltip"
             className="absolute left-0 right-0 -bottom-9 z-20 bg-surface-hover border border-border rounded px-3 py-1.5 text-xs font-sans text-text-primary shadow-lg"
           >
             {description}

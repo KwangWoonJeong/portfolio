@@ -41,6 +41,8 @@ export default function TechStack() {
       {/* tabs */}
       <motion.div
         className="flex flex-wrap gap-1 mb-8 border-b border-border"
+        role="tablist"
+        aria-label="Tech stack categories"
         initial="hidden"
         animate={isVisible ? 'visible' : 'hidden'}
         variants={fadeUp}
@@ -48,6 +50,8 @@ export default function TechStack() {
         {tabs.map((t) => (
           <button
             key={t.key}
+            role="tab"
+            aria-selected={active === t.key}
             onClick={() => setActive(t.key)}
             className={`px-4 py-2 font-mono text-sm transition-colors relative ${
               active === t.key

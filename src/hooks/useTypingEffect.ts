@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import useReducedMotion from './useReducedMotion'
 
 interface UseTypingEffectOptions {
   strings: string[]
@@ -13,20 +14,36 @@ export default function useTypingEffect({
   deletingSpeed = 40,
   pauseDuration = 2000,
 }: UseTypingEffectOptions) {
-  const [displayText, setDisplayText] = useState('')
+  const reduced = useReducedMotion()
+  const [displayText, setDisplayText] = useState(reduced ? strings[0] : '')
   const [stringIndex, setStringIndex] = useState(0)
   const [isTyping, setIsTyping] = useState(true)
   const [showCursor, setShowCursor] = useState(true)
 
+  // If reduced motion, show full text immediately
+  useEffect(() => {
+    if (reduced) {
+      setDisplayText(strings[stringIndex])
+    }
+  }, [reduced, stringIndex, strings])
+
   // cursor blink
   useEffect(() => {
+    if (reduced) return
     const id = setInterval(() => setShowCursor((v) => !v), 530)
     return () => clearInterval(id)
-  }, [])
+  }, [reduced])
 
   const currentString = strings[stringIndex]
 
   const tick = useCallback(() => {
+    if (reduced) {
+      // In reduced motion, just cycle strings on a timer
+      return setTimeout(() => {
+        setStringIndex((i) => (i + 1) % strings.length)
+      }, pauseDuration)
+    }
+
     if (isTyping) {
       if (displayText.length < currentString.length) {
         return setTimeout(
@@ -34,26 +51,23 @@ export default function useTypingEffect({
           typingSpeed,
         )
       }
-      // finished typing — pause then start deleting
       return setTimeout(() => setIsTyping(false), pauseDuration)
     }
-    // deleting
     if (displayText.length > 0) {
       return setTimeout(
         () => setDisplayText(displayText.slice(0, -1)),
         deletingSpeed,
       )
     }
-    // finished deleting — move to next string
     setStringIndex((i) => (i + 1) % strings.length)
     setIsTyping(true)
     return undefined
-  }, [displayText, isTyping, currentString, typingSpeed, deletingSpeed, pauseDuration, strings.length])
+  }, [displayText, isTyping, currentString, typingSpeed, deletingSpeed, pauseDuration, strings, reduced])
 
   useEffect(() => {
     const id = tick()
     return () => { if (id) clearTimeout(id) }
   }, [tick])
 
-  return { displayText, isTyping, showCursor }
+  return { displayText, isTyping, showCursor: reduced ? true : showCursor }
 }
