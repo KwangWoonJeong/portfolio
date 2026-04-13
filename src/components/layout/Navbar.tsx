@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import ThemeToggle from '../ui/ThemeToggle'
 
 const SECTIONS = ['hero', 'about', 'skills', 'projects', 'experience', 'blog', 'contact'] as const
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
-  const [active, setActive] = useState<string>('about')
+  const [active, setActive] = useState<string>('hero')
+  const location = useLocation()
+  const navigate = useNavigate()
+  const isHome = location.pathname === '/'
 
   useEffect(() => {
     const els = SECTIONS.map((id) => document.getElementById(id)).filter(
@@ -22,25 +26,50 @@ export default function Navbar() {
     )
     els.forEach((el) => obs.observe(el))
     return () => obs.disconnect()
-  }, [])
+  }, [location.pathname])
+
+  const scrollToSection = (id: string) => {
+    setOpen(false)
+    if (isHome) {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      navigate('/', { state: { scrollTo: id } })
+    }
+  }
+
+  // Handle scroll after navigating back to home
+  useEffect(() => {
+    const state = location.state as { scrollTo?: string } | null
+    if (isHome && state?.scrollTo) {
+      // Wait for DOM to render sections
+      requestAnimationFrame(() => {
+        document.getElementById(state.scrollTo!)?.scrollIntoView({ behavior: 'smooth' })
+      })
+      // Clear state so it doesn't re-scroll on re-render
+      window.history.replaceState({}, '')
+    }
+  }, [location, isHome])
 
   return (
     <nav className="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-primary/70 border-b border-border">
       <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-        <a href="#about" className="font-mono text-accent-green text-sm">
+        <button
+          onClick={() => scrollToSection('hero')}
+          className="font-mono text-accent-green text-sm"
+        >
           <span className="text-text-muted">$</span> ~/manbo
-        </a>
+        </button>
         <ul className="hidden md:flex gap-6 font-mono text-sm">
           {SECTIONS.map((s) => (
             <li key={s}>
-              <a
-                href={`#${s}`}
+              <button
+                onClick={() => scrollToSection(s)}
                 className={`transition-colors ${
                   active === s ? 'text-accent' : 'text-text-muted hover:text-text-primary'
                 }`}
               >
                 {s}
-              </a>
+              </button>
             </li>
           ))}
         </ul>
@@ -63,13 +92,12 @@ export default function Navbar() {
         <ul className="flex flex-col gap-3 px-6 py-4 font-mono text-sm border-t border-border bg-surface">
           {SECTIONS.map((s) => (
             <li key={s}>
-              <a
-                href={`#${s}`}
-                onClick={() => setOpen(false)}
+              <button
+                onClick={() => scrollToSection(s)}
                 className={active === s ? 'text-accent' : 'text-text-muted'}
               >
                 {s}
-              </a>
+              </button>
             </li>
           ))}
         </ul>
