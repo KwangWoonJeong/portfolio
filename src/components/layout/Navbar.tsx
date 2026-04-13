@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import ThemeToggle from '../ui/ThemeToggle'
 
-const SECTIONS = ['about', 'skills', 'projects', 'experience', 'blog', 'contact'] as const
+const SECTIONS = ['hero', 'about', 'skills', 'projects', 'experience', 'blog', 'contact'] as const
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
