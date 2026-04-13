@@ -57,11 +57,15 @@ function parseMermaid(code: string): { nodes: Node[]; edges: Edge[]; direction: 
   }
 
   // deduplicate edges
-  const edgeSet = new Set(edges.map((e) => `${e.from}-${e.to}`))
-  const uniqueEdges = [...edgeSet].map((s) => {
-    const [from, to] = s.split('-')
-    return { from, to }
-  })
+  const seen = new Set<string>()
+  const uniqueEdges: Edge[] = []
+  for (const e of edges) {
+    const key = `${e.from}::${e.to}`
+    if (!seen.has(key)) {
+      seen.add(key)
+      uniqueEdges.push(e)
+    }
+  }
 
   // layout nodes
   const ids = [...nodeMap.keys()]
@@ -83,11 +87,14 @@ function parseMermaid(code: string): { nodes: Node[]; edges: Edge[]; direction: 
 
   const queue = [...roots]
   for (const r of roots) levels.set(r, 0)
+  const visited = new Set<string>()
   while (queue.length > 0) {
     const cur = queue.shift()!
+    if (visited.has(cur)) continue
+    visited.add(cur)
     const lvl = levels.get(cur) ?? 0
     for (const c of children.get(cur) ?? []) {
-      if (!levels.has(c) || levels.get(c)! < lvl + 1) {
+      if (!levels.has(c)) {
         levels.set(c, lvl + 1)
         queue.push(c)
       }
